@@ -1,7 +1,8 @@
 # PlantCare
  PlantCare: Smart Plant Maintenance
 ## Scenario
-> Plants maintained in homes, offices, or campuses are often neglected because caretakers forget watering schedules or maintenance routines.
+Plants maintained in homes, offices, or campuses are often neglected because caretakers forget watering schedules or maintenance routines.
+--
 🌿 PlantCare: Smart Plant Maintenance
 > **Scenario:** Plants maintained in homes, offices, or campuses are often neglected because caretakers forget watering schedules or maintenance routines.  
 > **Challenge:** Design and develop a solution that helps users monitor and manage plant care activities efficiently.
