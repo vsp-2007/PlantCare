@@ -6,8 +6,13 @@ Plants maintained in homes, offices, or campuses are often neglected because car
 🌿 PlantCare: Smart Plant Maintenance
 > **Scenario:** Plants maintained in homes, offices, or campuses are often neglected because caretakers forget watering schedules or maintenance routines.  
 > **Challenge:** Design and develop a solution that helps users monitor and manage plant care activities efficiently.
+
+---
+
 📖 About the Project
-PlantCare is a fully software-driven platform designed to eliminate plant neglect in indoor, office, and campus environments. By replacing the need for physical IoT hardware sensors with smartphone cameras, computer vision, and hyper-local environmental data streams, PlantCare provides accessible and highly accurate plant maintenance routines.
+PlantCare is a fully software-driven platform designed to eliminate plant neglect in indoor, office, and campus environments. By replacing the need for physical IoT hardware sensors with smartphone cameras, computer vision, and hyper-local environmental data streams, PlantCare provides accessible and highly accurate plant 
+maintenance routines.
+
 ✨ Core Features
 1. Computer Vision & AI Diagnosis
 Turn any smartphone camera into a powerful plant health diagnostic tool.
@@ -23,6 +28,7 @@ Botanical Database: Backed by structured parameters for hundreds of species' opt
 Virtual Garden Inventory: Catalog plants by location (e.g., "Main Library", "Balcony", "Office Desk").
 Smart Notification Engine: Automated push notifications for watering, misting, repotting, and fertilizing.
 Visual Progress Logging: Track growth over time via periodic photo uploads.
+
 🚀 Advanced Enterprise & Campus Capabilities
 Designed for scale and team management:
 Caretaker Accountability: Multi-role dashboards allow facility managers to assign specific plant zones to staff, track task completion, and trigger escalation alerts for neglected plants.
@@ -30,13 +36,16 @@ Geo-Tagged Pest Alerts: Detects and tracks localized transmissible issues (e.g.,
 Community Expert Loop: Low-confidence AI scans are flagged for manual review by a designated head groundskeeper or botanist.
 Inventory & Restock Integrations: Tracks campus supplies (soil, fertilizer) based on usage logs and generates automatic restock lists.
 Fertilizer Volume Calculator: Computes exact fertilizer demands based on plant species and pot/plot dimensions.
+
 🆚 PlantCare vs. Plantix
 While utilizing similar deep learning diagnostic concepts as Plantix, PlantCare is fundamentally different in its target audience and environment. Plantix optimizes large-scale agricultural yield for farmers. PlantCare is strictly tailored for indoor, home, and enterprise/campus environments where the primary challenge is caretaker neglect, routine management, and team delegation.
+
 🛠️ Proposed Tech Stack
 AI/ML: Python, TensorFlow/PyTorch, Convolutional Neural Networks (CNN)
 Backend: Python (FastAPI/Django), PostgreSQL
 External APIs: OpenWeatherMap, Botanical Data APIs
 Frontend: React Native / Flutter (Cross-platform mobile access for camera integration)
+
 ⚙️ Getting Started
 Prerequisites
 Python 3.9+
