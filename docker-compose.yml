@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - WEATHERAPI_KEY=${WEATHERAPI_KEY}
+      - KINDWISE_KEY=${KINDWISE_KEY}
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.openai.com/v1}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o-mini}
+      - DATABASE_URL=sqlite:///./plantcare.db
+      - PORT=3000
+    volumes:
+      - ./backend/data:/app/data
+    restart: unless-stopped
+
+  # Frontend will be served separately via Stitch export
+  # Run: cd frontend && npm run dev (proxies to backend:3000)
