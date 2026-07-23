@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+@layer utilities {
+  /* Neumorphic Extruded Flat Card / Surface */
+  .neo-card {
+    background: #0d1520;
+    box-shadow: 7px 7px 18px #05080e, -7px -7px 18px #152232;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 1rem;
+  }
+
+  /* Neumorphic Emerald Extruded Surface */
+  .neo-card-emerald {
+    background: linear-gradient(145deg, #09261c, #051912);
+    box-shadow: 7px 7px 18px #020b08, -6px -6px 16px #0e3b2c;
+    border: 1px solid rgba(16, 185, 129, 0.15);
+    border-radius: 1rem;
+  }
+
+  /* Neumorphic Convex Surface (Slightly curved up) */
+  .neo-convex {
+    background: linear-gradient(145deg, #121d2b, #0a111a);
+    box-shadow: 6px 6px 16px #04070c, -6px -6px 16px #162436;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* Neumorphic Recessed / Inset / Pressed Well */
+  .neo-inset {
+    background: #080c14;
+    box-shadow: inset 4px 4px 9px #030509, inset -4px -4px 9px #101825;
+    border: 1px solid rgba(255, 255, 255, 0.02);
+  }
+
+  /* Neumorphic Inset Input Field */
+  .neo-input {
+    background: #070a11;
+    box-shadow: inset 3px 3px 7px #030408, inset -3px -3px 7px #0e1622;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease-in-out;
+  }
+  .neo-input:focus {
+    box-shadow: inset 3px 3px 7px #020306, inset -3px -3px 7px #0e1622, 0 0 0 2px rgba(16, 185, 129, 0.4);
+    border-color: rgba(16, 185, 129, 0.6);
+    outline: none;
+  }
+
+  /* Neumorphic Tactile Button - Standard Dark Slate */
+  .neo-btn {
+    background: #0f1826;
+    box-shadow: 5px 5px 12px #060a10, -5px -5px 12px #18263c;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.15s ease;
+    cursor: pointer;
+  }
+  .neo-btn:hover {
+    background: #111b2b;
+    box-shadow: 3px 3px 8px #060a10, -3px -3px 8px #18263c;
+    transform: translateY(-1px);
+  }
+  .neo-btn:active, .neo-btn-active {
+    background: #0a101a;
+    box-shadow: inset 3px 3px 6px #04070c, inset -3px -3px 6px #121c2c;
+    transform: translateY(1px);
+  }
+
+  /* Neumorphic Primary Emerald Button */
+  .neo-btn-emerald {
+    background: linear-gradient(145deg, #10b981, #059669);
+    box-shadow: 5px 5px 14px #030f0b, -4px -4px 12px #18e09f;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #022c22;
+    font-weight: 600;
+    transition: all 0.15s ease;
+    cursor: pointer;
+  }
+  .neo-btn-emerald:hover {
+    background: linear-gradient(145deg, #34d399, #059669);
+    box-shadow: 3px 3px 8px #030f0b, -3px -3px 8px #18e09f;
+    transform: translateY(-1px);
+  }
+  .neo-btn-emerald:active {
+    background: #047857;
+    box-shadow: inset 3px 3px 6px #022c22, inset -3px -3px 6px #065f46;
+    transform: translateY(1px);
+  }
+
+  /* Neumorphic Rose / Danger Emergency Button */
+  .neo-btn-rose {
+    background: linear-gradient(145deg, #be123c, #881337);
+    box-shadow: 5px 5px 12px #130206, -4px -4px 10px #e11d48;
+    border: 1px solid rgba(244, 63, 94, 0.3);
+    color: #fff1f2;
+    transition: all 0.15s ease;
+    cursor: pointer;
+  }
+  .neo-btn-rose:hover {
+    background: linear-gradient(145deg, #e11d48, #9f1239);
+    box-shadow: 3px 3px 8px #130206, -3px -3px 8px #e11d48;
+    transform: translateY(-1px);
+  }
+  .neo-btn-rose:active {
+    background: #881337;
+    box-shadow: inset 3px 3px 6px #4c0519, inset -3px -3px 6px #be123c;
+    transform: translateY(1px);
+  }
+
+  /* Neumorphic Active Tab / Selected Item */
+  .neo-active {
+    background: #091511;
+    box-shadow: inset 3px 3px 7px #030806, inset -3px -3px 7px #0f2a20;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #34d399;
+  }
+
+  /* Neumorphic Badge / Chip */
+  .neo-badge {
+    background: #0d1520;
+    box-shadow: 3px 3px 7px #05080d, -3px -3px 7px #152233;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* Neumorphic Modal Dialog */
+  .neo-modal {
+    background: #0c141f;
+    box-shadow: 12px 12px 32px #04070b, -10px -10px 28px #142133;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* Custom Scrollbar for Neumorphic feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #080c14;
+  box-shadow: inset 2px 2px 5px #030508, inset -2px -2px 5px #0d1320;
+}
+::-webkit-scrollbar-thumb {
+  background: #142030;
+  border-radius: 4px;
+  box-shadow: 2px 2px 4px #06090e, -2px -2px 4px #1c2b40;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #10b981;
+}
+

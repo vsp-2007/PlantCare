@@ -1,0 +1,9 @@
+{
+  "name": "PlantCare Pro",
+  "description": "Tech-driven plant nurturing dashboard, species identification, AI plant doctor, care scheduling, emergency rescue, and garden management.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
