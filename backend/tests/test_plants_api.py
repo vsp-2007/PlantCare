@@ -43,8 +43,6 @@ class TestPlantsAPI(unittest.TestCase):
             "species_id": self.species_id,
             "location": "Living Room Window",
             "acquired_date": datetime.utcnow().isoformat(),
-            "latitude": 37.7749,
-            "longitude": -122.4194,
             "photo_url": "https://example.com/plant.jpg",
         }
         res = self.client.post("/api/v1/plants", json=payload)

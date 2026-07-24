@@ -20,8 +20,6 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({
   const [scientificName, setScientificName] = useState('Deliciosa');
   const [location, setLocation] = useState('Living room - north window');
   const [acquiredDate, setAcquiredDate] = useState(new Date().toISOString().split('T')[0]);
-  const [latitude, setLatitude] = useState('37.7749');
-  const [longitude, setLongitude] = useState('-122.4194');
   const [photoUrl, setPhotoUrl] = useState('https://lh3.googleusercontent.com/aida-public/AB6AXuCCMwJCla7dJPo7MDWgljeol0WcOvXHwj3LivMJ8cbiQQ6TPb84beJDVny5KqWx7JXsN9DHaihU-xWOwNuzW0WjZhZKTEwuh6UtxI-Pk58xKFo8ARHi-4WonsYi91PQkyJSK54AG0L3MSAd3Aao5oqKF7R7KAvhn2QgfoAguQPnVF_1wd66-putB31NwYQPYoK2BffiTBuyl06q9HBEKtuFKzXEGfAhnOfj9QyEmfeEO4B5OeZ5Hg5pK4CvOj7wOEK9WByPo4Pk6ds');
   const [sunRequirement, setSunRequirement] = useState('Partial');
   const [careNotes, setCareNotes] = useState('');
@@ -128,8 +126,6 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({
       sunRequirement,
       status: 'Healthy',
       photoUrl,
-      latitude,
-      longitude,
       watersCount: 1,
       fertsCount: 0,
       daysTracked: 1,
@@ -363,30 +359,6 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({
                 <option value="Direct" className="bg-slate-900 text-slate-100">Full Direct Sun</option>
                 <option value="Shade" className="bg-slate-900 text-slate-100">Deep Shade / Low Light</option>
               </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block mb-1">
-                Latitude
-              </label>
-              <input
-                type="text"
-                value={latitude}
-                onChange={(e) => setLatitude(e.target.value)}
-                className="w-full neo-input rounded-xl px-3.5 py-2.5 text-sm text-slate-100 font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block mb-1">
-                Longitude
-              </label>
-              <input
-                type="text"
-                value={longitude}
-                onChange={(e) => setLongitude(e.target.value)}
-                className="w-full neo-input rounded-xl px-3.5 py-2.5 text-sm text-slate-100 font-mono"
-              />
             </div>
           </div>
 

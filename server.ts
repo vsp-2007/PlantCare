@@ -61,33 +61,50 @@ For plant-related queries, structure responses concisely as:
 
     messages.push({ role: 'user', content: message || 'How is my plant doing?' });
 
-    const nvResponse = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'nvidia/nemotron-3.5-nano-30b-a3b',
-        messages,
-        temperature: 1,
-        top_p: 0.95,
-        max_tokens: 16384,
-        extra_body: {
-          chat_template_kwargs: { enable_thinking: true },
-          reasoning_budget: 16384
-        }
-      })
-    });
+    const candidateModels = [
+      'nvidia/nemotron-3-nano-30b-a3b',
+      'nvidia/llama-3.1-nemotron-70b-instruct',
+      'meta/llama-3.3-70b-instruct',
+      'nvidia/nemotron-4-340b-instruct'
+    ];
 
-    if (!nvResponse.ok) {
-      const errText = await nvResponse.text();
-      throw new Error(`NVIDIA API error (${nvResponse.status}): ${errText}`);
+    let lastError = null;
+    let replyText = '';
+
+    for (const modelName of candidateModels) {
+      try {
+        const nvResponse = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: modelName,
+            messages,
+            temperature: 0.7,
+            top_p: 0.95,
+            max_tokens: 4096
+          })
+        });
+
+        if (nvResponse.ok) {
+          const nvData = await nvResponse.json();
+          const choice = nvData.choices?.[0];
+          replyText = choice?.message?.content || choice?.message?.reasoning_content || '';
+          if (replyText) break;
+        } else {
+          const errText = await nvResponse.text();
+          lastError = `Model ${modelName} (${nvResponse.status}): ${errText}`;
+        }
+      } catch (err: any) {
+        lastError = err.message;
+      }
     }
 
-    const nvData = await nvResponse.json();
-    const choice = nvData.choices?.[0];
-    const replyText = choice?.message?.content || choice?.message?.reasoning_content || 'I have analyzed your plant query.';
+    if (!replyText) {
+      throw new Error(lastError || 'Failed to receive response from NVIDIA API candidate models');
+    }
 
     res.json({ reply: replyText });
   } catch (error: any) {

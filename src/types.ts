@@ -13,8 +13,6 @@ export interface Plant {
   sunRequirement: string; // 'Partial' | 'Shade' | 'Direct'
   status: 'Healthy' | 'Thirsty' | 'Warning' | 'Stable' | 'Growing';
   photoUrl: string;
-  latitude?: string;
-  longitude?: string;
   watersCount: number;
   fertsCount: number;
   daysTracked: number;

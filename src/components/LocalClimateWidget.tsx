@@ -25,8 +25,6 @@ interface WeatherData {
   weatherCode: number;
   isDay: boolean;
   locationName: string;
-  latitude: number;
-  longitude: number;
   isGeoLive: boolean;
 }
 
@@ -36,7 +34,19 @@ export const LocalClimateWidget: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [unit, setUnit] = useState<'C' | 'F'>('C');
 
-  // Fetch weather from Open-Meteo API using lat/lon
+  // 45-minute localStorage caching to strictly prevent API key rate limiting
+  const CACHE_KEY = 'plantcare_location_weather_cache';
+  const CACHE_EXPIRY_MS = 45 * 60 * 1000; // 45 minutes
+
+  const saveToCache = (wData: WeatherData) => {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        timestamp: Date.now(),
+        data: wData
+      }));
+    } catch (e) {}
+  };
+
   // Fetch weather from backend API or Open-Meteo API using lat/lon
   const fetchWeatherData = async (lat: number, lon: number, locationLabel: string, isLive: boolean) => {
     setLoading(true);
@@ -52,7 +62,7 @@ export const LocalClimateWidget: React.FC = () => {
         const humidity = Math.round(current.humidity ?? 55);
         const windSpeedKmH = Math.round(current.wind_kph ?? 8);
 
-        setWeather({
+        const wObj: WeatherData = {
           tempC,
           tempF,
           humidity,
@@ -60,10 +70,10 @@ export const LocalClimateWidget: React.FC = () => {
           weatherCode: 0,
           isDay: true,
           locationName: locationLabel,
-          latitude: lat,
-          longitude: lon,
           isGeoLive: isLive
-        });
+        };
+        setWeather(wObj);
+        saveToCache(wObj);
         setLoading(false);
         return;
       }
@@ -88,7 +98,7 @@ export const LocalClimateWidget: React.FC = () => {
       const weatherCode = current.weather_code ?? 0;
       const isDay = current.is_day !== 0;
 
-      setWeather({
+      const wObj: WeatherData = {
         tempC,
         tempF,
         humidity,
@@ -96,13 +106,13 @@ export const LocalClimateWidget: React.FC = () => {
         weatherCode,
         isDay,
         locationName: locationLabel,
-        latitude: lat,
-        longitude: lon,
         isGeoLive: isLive
-      });
+      };
+      setWeather(wObj);
+      saveToCache(wObj);
     } catch (err: any) {
       console.warn('Weather API fetch error:', err);
-      setWeather({
+      const fallbackObj: WeatherData = {
         tempC: 22,
         tempF: 72,
         humidity: 58,
@@ -110,10 +120,10 @@ export const LocalClimateWidget: React.FC = () => {
         weatherCode: 1,
         isDay: true,
         locationName: locationLabel || 'Local Microclimate',
-        latitude: lat,
-        longitude: lon,
         isGeoLive: isLive
-      });
+      };
+      setWeather(fallbackObj);
+      saveToCache(fallbackObj);
     } finally {
       setLoading(false);
     }
@@ -151,7 +161,22 @@ export const LocalClimateWidget: React.FC = () => {
   };
 
   // Get location via Geolocation API with IP fallback
-  const handleDetectLocation = () => {
+  const handleDetectLocation = (forceRefresh = false) => {
+    // Check localStorage cache first unless user explicitly forced a refresh
+    if (!forceRefresh) {
+      try {
+        const rawCache = localStorage.getItem(CACHE_KEY);
+        if (rawCache) {
+          const parsed = JSON.parse(rawCache);
+          if (parsed.timestamp && Date.now() - parsed.timestamp < CACHE_EXPIRY_MS && parsed.data) {
+            setWeather(parsed.data);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (e) {}
+    }
+
     setLoading(true);
     setError(null);
 
@@ -188,7 +213,7 @@ export const LocalClimateWidget: React.FC = () => {
   };
 
   useEffect(() => {
-    handleDetectLocation();
+    handleDetectLocation(false);
   }, []);
 
   // Weather Code to Description & Icon Mapping
@@ -307,7 +332,7 @@ export const LocalClimateWidget: React.FC = () => {
           </div>
 
           <button
-            onClick={handleDetectLocation}
+            onClick={() => handleDetectLocation(true)}
             disabled={loading}
             className="neo-btn px-3 py-2 rounded-xl text-xs font-bold text-emerald-300 flex items-center gap-1.5"
             title="Refresh local location and weather"

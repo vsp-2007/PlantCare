@@ -221,6 +221,21 @@ python -m unittest discover -s tests
 
 ---
 
+## 🔗 References & API Documentation
+
+For further reading on the external services, models, and core technologies integrated into PlantCare Pro:
+
+- **NVIDIA Nemotron AI & NIM Catalog**: [NVIDIA Integrated API Catalog](https://integrate.api.nvidia.com/) & [NVIDIA Nemotron Models](https://build.nvidia.com/nvidia/nemotron-3-nano-30b-a3b)
+- **WeatherAPI Telemetry Engine**: [WeatherAPI Official Documentation](https://www.weatherapi.com/docs/) & [API Explorer](https://www.weatherapi.com/api-explorer.aspx)
+- **Kindwise Crop Identification API**: [Kindwise Plant & Crop Identification Portal](https://www.kindwise.com/) & [Kindwise Crop API Specs](https://crop.kindwise.com/docs)
+- **Open-Meteo Weather Data**: [Open-Meteo Forecast API Documentation](https://open-meteo.com/en/docs)
+- **FastAPI Framework**: [FastAPI Official Documentation](https://fastapi.tiangolo.com/) & [Uvicorn ASGI Server](https://www.uvicorn.org/)
+- **SQLAlchemy ORM**: [SQLAlchemy 2.0 Documentation](https://docs.sqlalchemy.org/en/20/)
+- **React 19 & Vite 6**: [React 19 Official Guide](https://react.dev/) & [Vite 6 Build Tool](https://vite.dev/)
+- **Tailwind CSS v4**: [Tailwind CSS Framework](https://tailwindcss.com/) & [Lucide React Icons](https://lucide.dev/)
+
+---
+
 ## 📄 License
 
 This project is licensed under the MIT License.

@@ -42,24 +42,18 @@ try:
             "species_id": "monstera",
             "location": "Living room - east window",
             "acquired_date": datetime.utcnow() - timedelta(days=60),
-            "latitude": 12.9716,
-            "longitude": 77.5946,
         },
         {
             "nickname": "Office Snake Plant",
             "species_id": "snake",
             "location": "Office desk - north side",
             "acquired_date": datetime.utcnow() - timedelta(days=120),
-            "latitude": 12.9716,
-            "longitude": 77.5946,
         },
         {
             "nickname": "Bedroom Pothos",
             "species_id": "pothos",
             "location": "Bedroom - hanging basket",
             "acquired_date": datetime.utcnow() - timedelta(days=30),
-            "latitude": 12.9716,
-            "longitude": 77.5946,
         },
     ]
     

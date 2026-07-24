@@ -32,8 +32,6 @@ class Plant(Base):
     species_id = Column(String, ForeignKey("species.id"), nullable=False)
     location = Column(String(256), nullable=False)
     acquired_date = Column(DateTime, nullable=False)
-    latitude = Column(Float, nullable=True)
-    longitude = Column(Float, nullable=True)
     photo_url = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

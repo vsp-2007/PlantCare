@@ -96,14 +96,13 @@ async def get_stress_prediction_endpoint(plant_id: str = Body(..., embed=True), 
     species_info = _get_species_info(plant)
     logs = _get_care_history(plant_id, db)
     
-    # Get weather if coordinates available
+    # Get local weather data
     weather_data = {"current": {}, "forecast": []}
-    if plant.latitude and plant.longitude:
-        try:
-            weather = await get_weather(plant.latitude, plant.longitude)
-            weather_data = {"current": weather.current.model_dump(), "forecast": [f.model_dump() for f in weather.forecast]}
-        except:
-            pass
+    try:
+        weather = await get_weather(28.6139, 77.2090)
+        weather_data = {"current": weather.current.model_dump(), "forecast": [f.model_dump() for f in weather.forecast]}
+    except:
+        pass
     
     plant_data = {"nickname": plant.nickname, "age_days": (datetime.utcnow() - plant.acquired_date).days}
     try:

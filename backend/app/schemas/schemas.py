@@ -83,8 +83,6 @@ class PlantBase(BaseModel):
     species_id: str
     location: str
     acquired_date: datetime
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
     photo_url: Optional[str] = None
 
 
@@ -97,8 +95,6 @@ class PlantUpdate(BaseModel):
     species_id: Optional[str] = None
     location: Optional[str] = None
     acquired_date: Optional[datetime] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
     photo_url: Optional[str] = None
 
 
@@ -191,8 +187,6 @@ class MilestoneResponse(MilestoneBase):
 # Vision / Identify Schemas
 class IdentifyRequest(BaseModel):
     image_base64: str
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
 
 
 class IdentifySuggestion(BaseModel):

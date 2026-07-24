@@ -9,7 +9,7 @@ from app.schemas import (
 
 LLM_API_KEY = os.getenv("LLM_API_KEY", "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")
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://integrate.api.nvidia.com/v1").rstrip("/")
-LLM_MODEL = os.getenv("LLM_MODEL", "nvidia/nemotron-3.5-nano-30b-a3b")
+LLM_MODEL = os.getenv("LLM_MODEL", "nvidia/nemotron-3-nano-30b-a3b")
 
 
 SYSTEM_PROMPT = """You are PlantAI Doctor, an expert botanical specialist in PlantCare.
