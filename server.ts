@@ -32,42 +32,66 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Plant Doctor AI Chat API
+// Plant Doctor AI Chat API (NVIDIA Nemotron Model)
 app.post('/api/gemini/doctor', async (req, res) => {
   try {
     const { message, plantName, plantSpecies, history } = req.body;
-    const ai = getGeminiClient();
+    const apiKey = process.env.LLM_API_KEY || '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';
 
-    if (!ai) {
-      // Fallback mock response if API key is not yet set
-      return res.json({
-        reply: `As a digital plant doctor for ${plantName || 'your plant'} (${plantSpecies || 'Botanic'}), I recommend inspecting soil moisture 2 inches deep and ensuring bright, indirect light.`
-      });
-    }
-
-    const systemInstruction = `You are a warm, highly expert botanical doctor and plant care specialist named 'PlantAI Doctor' inside PlantCare Pro. 
+    const systemPrompt = `You are PlantAI Doctor, an expert botanical specialist in PlantCare.
 The user is asking about their plant: ${plantName || 'Monty'} (${plantSpecies || 'Monstera Deliciosa'}).
-Give accurate, clear, actionable advice on plant health, watering, light requirements, pest control, and humidity. Keep responses conversational and structured with bullet points if helpful.`;
+STRICT DOMAIN SCOPING RULE: You ONLY answer questions related to plants, botanical health, gardening, soil, watering, sunlight, plant care, pests, vegetation, and agriculture.
+If the user asks about ANY unrelated topic (such as general programming, sports, movies, mathematics, personal finance, or non-botanical topics), politely decline by stating: "I am PlantAI Doctor, specialized exclusively in plant care, botanical diagnostics, and gardening. I cannot assist with non-plant topics."
 
-    const chat = ai.chats.create({
-      model: 'gemini-3.6-flash',
-      config: {
-        systemInstruction
-      }
-    });
+For plant-related queries, structure responses concisely as:
+**Why:** Cause / Explanation (1-2 sentences)
+**What:** Diagnosis or Observation
+**How:** Actionable steps (numbered, specific)`;
+
+    const messages: any[] = [{ role: 'system', content: systemPrompt }];
 
     if (Array.isArray(history)) {
       for (const h of history) {
-        if (h.sender === 'user') {
-          await chat.sendMessage({ message: h.text });
-        }
+        messages.push({
+          role: h.sender === 'user' ? 'user' : 'assistant',
+          content: h.text || h.content || ''
+        });
       }
     }
 
-    const response = await chat.sendMessage({ message: message || 'How is my plant doing?' });
-    res.json({ reply: response.text || 'I have analyzed your plant query. Everything looks on track!' });
+    messages.push({ role: 'user', content: message || 'How is my plant doing?' });
+
+    const nvResponse = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'nvidia/nemotron-3.5-nano-30b-a3b',
+        messages,
+        temperature: 1,
+        top_p: 0.95,
+        max_tokens: 16384,
+        extra_body: {
+          chat_template_kwargs: { enable_thinking: true },
+          reasoning_budget: 16384
+        }
+      })
+    });
+
+    if (!nvResponse.ok) {
+      const errText = await nvResponse.text();
+      throw new Error(`NVIDIA API error (${nvResponse.status}): ${errText}`);
+    }
+
+    const nvData = await nvResponse.json();
+    const choice = nvData.choices?.[0];
+    const replyText = choice?.message?.content || choice?.message?.reasoning_content || 'I have analyzed your plant query.';
+
+    res.json({ reply: replyText });
   } catch (error: any) {
-    console.error('Error in Plant Doctor API:', error);
+    console.error('Error in NVIDIA Plant Doctor API:', error);
     res.status(500).json({
       error: 'Failed to process AI Plant Doctor request',
       details: error.message

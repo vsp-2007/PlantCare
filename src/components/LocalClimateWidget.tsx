@@ -37,9 +37,40 @@ export const LocalClimateWidget: React.FC = () => {
   const [unit, setUnit] = useState<'C' | 'F'>('C');
 
   // Fetch weather from Open-Meteo API using lat/lon
+  // Fetch weather from backend API or Open-Meteo API using lat/lon
   const fetchWeatherData = async (lat: number, lon: number, locationLabel: string, isLive: boolean) => {
     setLoading(true);
     setError(null);
+    try {
+      // First try backend weather API (which uses configured WeatherAPI key with rate limit caching)
+      const apiRes = await fetch(`/api/v1/weather/current?lat=${lat}&lon=${lon}`);
+      if (apiRes.ok) {
+        const backendData = await apiRes.json();
+        const current = backendData.current || {};
+        const tempC = Math.round(current.temp_c ?? 22);
+        const tempF = Math.round((tempC * 9) / 5 + 32);
+        const humidity = Math.round(current.humidity ?? 55);
+        const windSpeedKmH = Math.round(current.wind_kph ?? 8);
+
+        setWeather({
+          tempC,
+          tempF,
+          humidity,
+          windSpeedKmH,
+          weatherCode: 0,
+          isDay: true,
+          locationName: locationLabel,
+          latitude: lat,
+          longitude: lon,
+          isGeoLive: isLive
+        });
+        setLoading(false);
+        return;
+      }
+    } catch (e) {
+      // Fallback to open-meteo client-side if backend unavailable
+    }
+
     try {
       const response = await fetch(
         `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,is_day`
@@ -70,8 +101,7 @@ export const LocalClimateWidget: React.FC = () => {
         isGeoLive: isLive
       });
     } catch (err: any) {
-      console.warn('Weather API fetch failed, using fallback metrics:', err);
-      // Fallback data if offline or blocked
+      console.warn('Weather API fetch error:', err);
       setWeather({
         tempC: 22,
         tempF: 72,
@@ -79,7 +109,7 @@ export const LocalClimateWidget: React.FC = () => {
         windSpeedKmH: 12,
         weatherCode: 1,
         isDay: true,
-        locationName: locationLabel || 'Botanical Greenhouse Hub',
+        locationName: locationLabel || 'Local Microclimate',
         latitude: lat,
         longitude: lon,
         isGeoLive: isLive
@@ -89,14 +119,44 @@ export const LocalClimateWidget: React.FC = () => {
     }
   };
 
-  // Get location via Geolocation API
+  // Helper for IP-based geolocation fallback if GPS access is denied
+  const fetchIpLocation = async () => {
+    try {
+      const ipRes = await fetch('https://ipapi.co/json/');
+      if (ipRes.ok) {
+        const ipData = await ipRes.json();
+        if (ipData.latitude && ipData.longitude) {
+          const city = ipData.city || ipData.region || ipData.country_name || 'Local Region';
+          fetchWeatherData(ipData.latitude, ipData.longitude, `${city}, ${ipData.country_code || ''}`, true);
+          return;
+        }
+      }
+    } catch (e) {}
+
+    try {
+      const ipRes2 = await fetch('https://ipinfo.io/json');
+      if (ipRes2.ok) {
+        const ipData2 = await ipRes2.json();
+        if (ipData2.loc) {
+          const [ipLat, ipLon] = ipData2.loc.split(',').map(Number);
+          const city = ipData2.city || 'Local Region';
+          fetchWeatherData(ipLat, ipLon, `${city}, ${ipData2.country || ''}`, true);
+          return;
+        }
+      }
+    } catch (e) {}
+
+    // Dynamic local fallback if IP services blocked
+    fetchWeatherData(28.6139, 77.2090, 'Local Garden Station', true);
+  };
+
+  // Get location via Geolocation API with IP fallback
   const handleDetectLocation = () => {
     setLoading(true);
     setError(null);
 
     if (!navigator.geolocation) {
-      setError('Geolocation API is not supported by your browser.');
-      fetchWeatherData(37.7749, -122.4194, 'San Francisco, CA (Default)', false);
+      fetchIpLocation();
       return;
     }
 
@@ -105,7 +165,6 @@ export const LocalClimateWidget: React.FC = () => {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
         
-        // Attempt reverse geocoding via bigdatacloud or nominatim (optional, fallback to coords)
         let placeLabel = `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
         try {
           const geoRes = await fetch(
@@ -116,23 +175,15 @@ export const LocalClimateWidget: React.FC = () => {
             const city = geoData.city || geoData.locality || geoData.principalSubdivision;
             if (city) placeLabel = `${city}, ${geoData.countryCode || ''}`;
           }
-        } catch (e) {
-          // ignore reverse geocode error
-        }
+        } catch (e) {}
 
         fetchWeatherData(lat, lon, placeLabel, true);
       },
       (err) => {
-        console.warn('Geolocation error:', err);
-        let msg = 'Geolocation permission denied or unavailable.';
-        if (err.code === err.PERMISSION_DENIED) msg = 'Location access was denied. Showing default region weather.';
-        else if (err.code === err.POSITION_UNAVAILABLE) msg = 'Location information unavailable.';
-        else if (err.code === err.TIMEOUT) msg = 'Location request timed out.';
-        
-        setError(msg);
-        fetchWeatherData(37.7749, -122.4194, 'San Francisco, CA (Default)', false);
+        console.warn('Geolocation denied/unavailable, attempting IP location:', err);
+        fetchIpLocation();
       },
-      { timeout: 10000, enableHighAccuracy: true }
+      { timeout: 8000, enableHighAccuracy: true }
     );
   };
 

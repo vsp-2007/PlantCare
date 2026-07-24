@@ -16,8 +16,6 @@ export const INITIAL_PLANTS: Plant[] = [
     sunRequirement: 'Partial',
     status: 'Healthy',
     photoUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCCMwJCla7dJPo7MDWgljeol0WcOvXHwj3LivMJ8cbiQQ6TPb84beJDVny5KqWx7JXsN9DHaihU-xWOwNuzW0WjZhZKTEwuh6UtxI-Pk58xKFo8ARHi-4WonsYi91PQkyJSK54AG0L3MSAd3Aao5oqKF7R7KAvhn2QgfoAguQPnVF_1wd66-putB31NwYQPYoK2BffiTBuyl06q9HBEKtuFKzXEGfAhnOfj9QyEmfeEO4B5OeZ5Hg5pK4CvOj7wOEK9WByPo4Pk6ds',
-    latitude: '37.7749',
-    longitude: '-122.4194',
     watersCount: 12,
     fertsCount: 2,
     daysTracked: 45

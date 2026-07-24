@@ -68,61 +68,34 @@ export const ChatDoctorView: React.FC<ChatDoctorViewProps> = ({
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/v1/plants/${selectedPlant.id}/chat/stream`, {
+      const response = await fetch('/api/gemini/doctor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: textToSend })
+        body: JSON.stringify({
+          message: textToSend,
+          plantName: selectedPlant.nickname,
+          plantSpecies: selectedPlant.species,
+          history: messages
+        })
       });
 
-      if (!response.ok) throw new Error('Chat failed');
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let fullReply = '';
-      let botMsgId = `bot-${Date.now()}`;
-
-      // Add placeholder for streaming response
-      const botMsg: ChatMessage = {
-        id: botMsgId,
-        sender: 'bot',
-        text: '',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages(prev => [...prev, botMsg]);
-
-      while (reader) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-        
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') continue;
-            try {
-              const parsed = JSON.parse(data);
-              if (parsed.delta) {
-                fullReply += parsed.delta;
-                setMessages(prev => prev.map(m => 
-                  m.id === botMsgId ? { ...m, text: fullReply } : m
-                ));
-              }
-            } catch {}
-          }
-        }
+      if (!response.ok) {
+        throw new Error(`API error ${response.status}`);
       }
 
-      // Save to chat history
-      if (fullReply) {
-        // History is already saved by backend
-      }
-    } catch (e) {
+      const data = await response.json();
       const botMsg: ChatMessage = {
         id: `bot-${Date.now()}`,
         sender: 'bot',
-        text: `For ${selectedPlant.nickname} (${selectedPlant.species}), standard care guidelines recommend indirect light, high humidity, and checking soil moisture before watering.`,
+        text: data.reply || 'PlantAI Doctor processed your query.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages(prev => [...prev, botMsg]);
+    } catch (e: any) {
+      const botMsg: ChatMessage = {
+        id: `bot-${Date.now()}`,
+        sender: 'bot',
+        text: `Error connecting to NVIDIA Nemotron model: ${e.message || 'Please try again.'}`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, botMsg]);
@@ -144,10 +117,10 @@ export const ChatDoctorView: React.FC<ChatDoctorViewProps> = ({
             <h2 className="text-xl font-bold text-white flex items-center gap-2.5">
               <span>PlantAI Doctor Consultation</span>
               <span className="text-xs neo-badge text-emerald-300 font-extrabold px-3 py-1 rounded-xl">
-                Gemini 3.6 Flash
+                NVIDIA Nemotron 3.5
               </span>
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">Real-time botanical diagnosis, pest identification & care advice</p>
+            <p className="text-xs text-slate-400 mt-0.5">Real-time botanical diagnosis via NVIDIA AI reasoning model</p>
           </div>
         </div>
 
@@ -203,7 +176,7 @@ export const ChatDoctorView: React.FC<ChatDoctorViewProps> = ({
           {isLoading && (
             <div className="flex items-center gap-2 text-xs text-emerald-300 p-3 rounded-xl neo-badge">
               <RefreshCw className="animate-spin" size={16} />
-              <span>Analyzing leaf diagnostics and humidity factors with Gemini...</span>
+              <span>PlantAI Doctor reasoning with NVIDIA Nemotron model...</span>
             </div>
           )}
         </div>

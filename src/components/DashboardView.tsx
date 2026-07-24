@@ -100,15 +100,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       const botMsg: ChatMessage = {
         id: `bot-${Date.now()}`,
         sender: 'bot',
-        text: data.reply || `I recommend checking the soil moisture 2 inches down for ${selectedPlant.nickname}.`,
+        text: data.reply || data.error || 'PlantAI Doctor processed your query.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setChatMessages(prev => [...prev, botMsg]);
-    } catch (e) {
+    } catch (e: any) {
       const botMsg: ChatMessage = {
         id: `bot-${Date.now()}`,
         sender: 'bot',
-        text: `Based on botanical guidelines for ${selectedPlant.species}, ensure indirect light, maintain humidity around 50%, and water when topsoil feels dry.`,
+        text: `Error connecting to AI Doctor: ${e.message || 'Please try again.'}`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setChatMessages(prev => [...prev, botMsg]);
@@ -313,7 +313,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
 
             {/* Micro Location & Metadata Pills */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+            <div className="grid grid-cols-3 gap-2.5 text-xs">
               <div className="neo-inset p-3 rounded-2xl">
                 <span className="text-slate-400 text-[10px] uppercase block font-bold">Location</span>
                 <span className="text-slate-100 font-semibold truncate block mt-0.5">{selectedPlant.location}</span>
@@ -329,11 +329,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="neo-inset p-3 rounded-2xl">
                 <span className="text-slate-400 text-[10px] uppercase block font-bold">Acquired</span>
                 <span className="text-slate-100 font-semibold block mt-0.5">{selectedPlant.acquiredDate}</span>
-              </div>
-
-              <div className="neo-inset p-3 rounded-2xl">
-                <span className="text-slate-400 text-[10px] uppercase block font-bold">Geo Coordinates</span>
-                <span className="text-emerald-300 font-mono text-[11px] block mt-0.5">{selectedPlant.latitude || '37.77'}, {selectedPlant.longitude || '-122.41'}</span>
               </div>
             </div>
 
@@ -556,7 +551,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <Sun size={14} className="text-amber-300" /> Weather & Humidity Sync
               </h4>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Local microclimate at coordinates ({selectedPlant.latitude}, {selectedPlant.longitude}) predicts 42% relative humidity today. Recommendation: Light morning foliage misting.
+                Local microclimate predictions indicate optimal relative humidity for {selectedPlant.nickname}. Recommendation: Maintain steady ambient light and regular moisture checks.
               </p>
             </div>
           </div>
