@@ -12,8 +12,8 @@
 
 ## ✨ Key Features
 
-- **📸 Computer Vision & AI Species Identification**: Instant species identification and care guidelines from plant photos powered by Google Gemini Vision and Kindwise API.
-- **🤖 Interactive AI Plant Doctor**: Multi-turn plant health consultations using `@google/genai` (Gemini 3.6 Flash) and LLM endpoints to diagnose drooping, leaf discoloration, pests, or nutrient deficiencies.
+- **📸 Computer Vision & AI Species Identification**: Instant species identification and care guidelines from plant photos powered by your desired AI provider and Kindwise API.
+- **🤖 Interactive AI Plant Doctor**: Multi-turn plant health consultations using your desired AI provider (such as NVIDIA Nemotron, OpenAI, or Gemini) and LLM endpoints to diagnose drooping, leaf discoloration, pests, or nutrient deficiencies.
 - **⛅ Context-Aware Smart Care Scheduling**: Dynamic watering algorithm that adjusts alert schedules based on real-time weather data and hyper-local forecasts from WeatherAPI.
 - **📊 AI Survival Scoring & Health Insights**: Predictive analytics providing 0-100 survival scores, stress risk assessments, growth forecasts, and emergency rescue action plans.
 - **🌿 Virtual Garden & Plant Passport**: Complete plant management with historical care logs, milestone timeline tracking, visual photo logs, and complete exportable plant passports.
@@ -34,7 +34,7 @@
  │      Express Node Server     │ │      FastAPI Python Backend │
  │         (Port 3001)          │ │         (Port 3000)         │
  │  - Vite Dev Middleware       │ │  - Plant CRUD & History     │
- │  - Google Gemini AI API      │ │  - Weather & Kindwise APIs  │
+ │  - AI Provider Proxy API     │ │  - Weather & Kindwise APIs  │
  │    (/api/gemini/*)           │ │  - SQLite DB + SQLAlchemy   │
  └──────────────────────────────┘ └─────────────────────────────┘
 ```
@@ -42,7 +42,7 @@
 ### Frontend & App Server
 - **Framework**: React 19, TypeScript, Vite 6
 - **UI & Styling**: Tailwind CSS v4, Motion (Framer Motion), Lucide React Icons, Recharts
-- **Server**: Express Node.js (`server.ts`) serving Vite middleware and Gemini AI endpoints
+- **Server**: Express Node.js (`server.ts`) serving Vite middleware and AI provider proxy endpoints
 
 ### Backend Service
 - **Framework**: Python 3.10+, FastAPI, Uvicorn
@@ -50,7 +50,7 @@
 - **Validation**: Pydantic v2
 
 ### AI & External APIs
-- **Google Gemini AI**: `@google/genai` (`gemini-3.6-flash`) for Plant Doctor and Vision Identification
+- **AI Provider Integration**: Flexible AI LLM integration supporting your desired provider (NVIDIA Nemotron, OpenAI, etc.) for Plant Doctor and Vision Identification
 - **Kindwise Crop API**: Plant species identification
 - **WeatherAPI.com**: Hyper-local weather data & forecasts
 - **LLM Integrations**: OpenAI-compatible API providers (NVIDIA NIM / OpenRouter / OpenAI)
@@ -179,8 +179,8 @@ The backend container will run on `http://localhost:3000`.
 | Endpoint | Method | Description |
 |---|---|---|
 | `/api/health` | `GET` | Health check endpoint |
-| `/api/gemini/doctor` | `POST` | Interactive Gemini AI Plant Doctor consultation |
-| `/api/gemini/identify` | `POST` | Vision AI plant species & condition identification |
+| `/api/gemini/doctor` | `POST` | Interactive AI Plant Doctor consultation via desired provider |
+| `/api/gemini/identify` | `POST` | Vision AI plant species & condition identification via desired provider |
 
 ### FastAPI Backend Endpoints (`http://localhost:3000`)
 | Endpoint | Method | Description |
