@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bot, Send, Sparkles, RefreshCw, Sprout, ShieldAlert, Heart, Info } from 'lucide-react';
 import { Plant, ChatMessage } from '../types';
 
@@ -26,6 +26,32 @@ export const ChatDoctorView: React.FC<ChatDoctorViewProps> = ({
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Load chat history when plant changes
+  useEffect(() => {
+    if (selectedPlant) {
+      loadChatHistory(selectedPlant.id);
+    }
+  }, [selectedPlant]);
+
+  const loadChatHistory = async (plantId: string) => {
+    try {
+      const response = await fetch(`/api/v1/plants/${plantId}/chat`);
+      if (response.ok) {
+        const history = await response.json();
+        if (history.length > 0) {
+          setMessages(history.map((msg: any) => ({
+            id: msg.id,
+            sender: msg.role === 'user' ? 'user' : 'bot',
+            text: msg.content,
+            timestamp: new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          })));
+        }
+      }
+    } catch (e) {
+      console.warn('Could not load chat history:', e);
+    }
+  };
+
   const handleSendMessage = async (customMessage?: string) => {
     const textToSend = customMessage || inputText;
     if (!textToSend.trim() || isLoading) return;
@@ -42,25 +68,56 @@ export const ChatDoctorView: React.FC<ChatDoctorViewProps> = ({
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/gemini/doctor', {
+      const response = await fetch(`/api/v1/plants/${selectedPlant.id}/chat/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: textToSend,
-          plantName: selectedPlant.nickname,
-          plantSpecies: selectedPlant.species,
-          history: messages
-        })
+        body: JSON.stringify({ message: textToSend })
       });
 
-      const data = await response.json();
+      if (!response.ok) throw new Error('Chat failed');
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullReply = '';
+      let botMsgId = `bot-${Date.now()}`;
+
+      // Add placeholder for streaming response
       const botMsg: ChatMessage = {
-        id: `bot-${Date.now()}`,
+        id: botMsgId,
         sender: 'bot',
-        text: data.reply || `Based on botanical parameters for ${selectedPlant.species}, maintain indirect sunlight and ensure the top 2 inches of soil dry between deep waterings.`,
+        text: '',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, botMsg]);
+
+      while (reader) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.delta) {
+                fullReply += parsed.delta;
+                setMessages(prev => prev.map(m => 
+                  m.id === botMsgId ? { ...m, text: fullReply } : m
+                ));
+              }
+            } catch {}
+          }
+        }
+      }
+
+      // Save to chat history
+      if (fullReply) {
+        // History is already saved by backend
+      }
     } catch (e) {
       const botMsg: ChatMessage = {
         id: `bot-${Date.now()}`,

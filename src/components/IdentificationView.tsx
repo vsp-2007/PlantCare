@@ -25,31 +25,40 @@ export const IdentificationView: React.FC<IdentificationViewProps> = ({
   const [matches, setMatches] = useState<SpeciesMatch[]>(INITIAL_SPECIES_DATABASE);
 
   const handleStartScan = async () => {
-    setIsScanning(true);
+      setIsScanning(true);
 
-    try {
-      const res = await fetch('/api/gemini/identify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          description: 'Identify this tropical indoor plant leaf sample.'
-        })
-      });
+      try {
+        const res = await fetch('/api/v1/vision/identify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image_base64: selectedPhoto.split(',')[1] || selectedPhoto
+          })
+        });
 
-      const data = await res.json();
-      if (data.matches && data.matches.length > 0) {
-        setMatches(data.matches);
-      } else {
+        const data = await res.json();
+        if (data.suggestions && data.suggestions.length > 0) {
+          // Transform backend suggestions to SpeciesMatch format
+          setMatches(data.suggestions.map((s: any) => ({
+            species: s.scientific_name,
+            commonName: s.common_name,
+            confidence: Math.round(s.confidence),
+            tags: ['AI Identified'],
+            photoUrl: s.thumbnail_url || selectedPhoto,
+            description: s.description || `Identified as ${s.common_name}`
+          })));
+        } else {
+          setMatches(INITIAL_SPECIES_DATABASE);
+        }
+      } catch (e) {
+        console.warn('Identification failed, using fallback:', e);
         setMatches(INITIAL_SPECIES_DATABASE);
+      } finally {
+        setTimeout(() => {
+          setIsScanning(false);
+        }, 1200);
       }
-    } catch (e) {
-      setMatches(INITIAL_SPECIES_DATABASE);
-    } finally {
-      setTimeout(() => {
-        setIsScanning(false);
-      }, 1200);
-    }
-  };
+    };
 
   const samplePhotos = [
     { label: 'Swiss Cheese (Monstera)', url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC4pCGpENBOqU1X91S7MW4VB7gSBg9O1cwvp1kDMvWSmzZegP7t7vE9-34ru9fkMzdruWw-oSkWqwjyKe73nuOt6u080dG-EDI52k8b0pkeeAl2SFceoiXCFmSSknsWrWyWYe7WUivwiyKmGjHIwRZWH0UIYRXgZouw5K-vc-3AkOn_1rAi_BYjs_uRQEjFIvsaom3n2DEikfnPk4l4XCMCbfzt22fovIbhYXzP3D6BOuzS5s1d8ByAZuZQpRNx40kHL-g9fctPlEI' },

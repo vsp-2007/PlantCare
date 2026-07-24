@@ -1,7 +1,8 @@
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 
-from app.database import get_db
+from app.db.database import get_db
 from app.models import Plant, CareLog, Species
 from app.schemas import (
     SurvivalScoreResponse, StressPredictionResponse,

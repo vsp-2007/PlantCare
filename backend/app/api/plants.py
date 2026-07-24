@@ -1,10 +1,11 @@
+import uuid
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import Optional
 
 from app.db.database import get_db
 from app.models import Plant, Species, CareLog, ChatMessage, Milestone
-from app.schemas.schemas import (
+from app.schemas import (
     PlantCreate, PlantUpdate, PlantResponse,
     PlantPassportResponse, CareLogResponse, ChatMessageResponse, MilestoneResponse,
 )
@@ -28,17 +29,22 @@ def create_plant(body: PlantCreate, db: Session = Depends(get_db)):
     species = db.query(Species).filter(Species.id == body.species_id).first()
     if not species:
         raise HTTPException(404, "Species not found")
-    existing = db.query(Plant).filter(Plant.id == body.id).first()
+        
+    plant_id = body.id or str(uuid.uuid4())
+    existing = db.query(Plant).filter(Plant.id == plant_id).first()
     if existing:
         raise HTTPException(409, "Plant with this ID already exists")
-    plant = Plant(**body.model_dump())
+        
+    data = body.model_dump()
+    data["id"] = plant_id
+    plant = Plant(**data)
     db.add(plant)
     db.commit()
     db.refresh(plant)
     return plant
 
 
-@router.get("/plants/{plant_id}", response_model=PlantResponse)
+@router.get("/{plant_id}", response_model=PlantResponse)
 def get_plant(plant_id: str, db: Session = Depends(get_db)):
     plant = db.query(Plant).filter(Plant.id == plant_id).first()
     if not plant:
@@ -46,7 +52,7 @@ def get_plant(plant_id: str, db: Session = Depends(get_db)):
     return plant
 
 
-@router.put("/plants/{plant_id}", response_model=PlantResponse)
+@router.put("/{plant_id}", response_model=PlantResponse)
 def update_plant(plant_id: str, body: PlantUpdate, db: Session = Depends(get_db)):
     plant = db.query(Plant).filter(Plant.id == plant_id).first()
     if not plant:
@@ -58,7 +64,7 @@ def update_plant(plant_id: str, body: PlantUpdate, db: Session = Depends(get_db)
     return plant
 
 
-@router.delete("/plants/{plant_id}", status_code=204)
+@router.delete("/{plant_id}", status_code=204)
 def delete_plant(plant_id: str, db: Session = Depends(get_db)):
     plant = db.query(Plant).filter(Plant.id == plant_id).first()
     if not plant:
@@ -68,7 +74,7 @@ def delete_plant(plant_id: str, db: Session = Depends(get_db)):
     return None
 
 
-@router.get("/plants/{plant_id}/passport", response_model=PlantPassportResponse)
+@router.get("/{plant_id}/passport", response_model=PlantPassportResponse)
 def get_plant_passport(plant_id: str, db: Session = Depends(get_db)):
     plant = db.query(Plant).filter(Plant.id == plant_id).first()
     if not plant:

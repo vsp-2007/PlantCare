@@ -85,7 +85,7 @@ try:
             type="water",
             timestamp=datetime.utcnow() - timedelta(days=2),
             notes="Regular watering",
-            metadata={"volume_ml": 200, "water_source": "filtered"},
+            care_metadata={"volume_ml": 200, "water_source": "filtered"},
         )
         db.add(water_log)
         

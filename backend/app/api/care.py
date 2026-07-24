@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
 from datetime import datetime
 import uuid
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
 
-from app.database import get_db
+from app.db.database import get_db
 from app.models import CareLog, Plant, Milestone
 from app.schemas import CareLogCreate, CareLogResponse, CareLogPage
 
@@ -99,7 +99,7 @@ def get_care_logs(
     total = db.query(CareLog).filter(CareLog.plant_id == plant_id).count()
     
     return CareLogPage(
-        items=[CareLogResponse(**log.__dict__) for log in logs],
+        items=[CareLogResponse.model_validate(log) for log in logs],
         total=total,
         page=page,
         page_size=page_size,
@@ -125,10 +125,11 @@ def create_care_log(
         care_metadata=care_log.care_metadata,
     )
     db.add(log)
+    db.flush()
     
     # Auto-create milestones
     _create_auto_milestones(db, plant, log)
     
     db.commit()
     db.refresh(log)
-    return CareLogResponse(**log.__dict__)
+    return CareLogResponse.model_validate(log)

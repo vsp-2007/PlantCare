@@ -3,17 +3,17 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models import Species
-from app.schemas.schemas import SpeciesCreate, SpeciesResponse, SpeciesSearchResult
+from app.schemas import SpeciesCreate, SpeciesResponse, SpeciesSearchResult
 
-router = APIRouter(tags=["species"])
+router = APIRouter(prefix="/species", tags=["species"])
 
 
-@router.get("/species", response_model=list[SpeciesResponse])
+@router.get("", response_model=list[SpeciesResponse])
 def list_species(db: Session = Depends(get_db)):
     return db.query(Species).order_by(Species.common_name).all()
 
 
-@router.get("/species/search", response_model=list[SpeciesSearchResult])
+@router.get("/search", response_model=list[SpeciesSearchResult])
 def search_species(q: str = Query(min_length=1), db: Session = Depends(get_db)):
     term = f"%{q}%"
     species = (
@@ -28,7 +28,7 @@ def search_species(q: str = Query(min_length=1), db: Session = Depends(get_db)):
     return species
 
 
-@router.post("/species", response_model=SpeciesResponse, status_code=201)
+@router.post("", response_model=SpeciesResponse, status_code=201)
 def create_species(body: SpeciesCreate, db: Session = Depends(get_db)):
     existing = db.query(Species).filter(Species.id == body.id).first()
     if existing:

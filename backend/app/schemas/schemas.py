@@ -1,8 +1,48 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Any, Dict
 from pydantic import BaseModel, Field
+from enum import Enum
 
 
+# Enums
+class CareType(str, Enum):
+    WATER = "water"
+    FERTILIZE = "fertilize"
+    PRUNE = "prune"
+    REPOT = "repot"
+    INSPECT = "inspect"
+    MOVE = "move"
+
+
+class MilestoneType(str, Enum):
+    FIRST_SPROUT = "first_sprout"
+    FIRST_BLOOM = "first_bloom"
+    REPOTTED = "repotted"
+    MOVED = "moved"
+    STRESS_RECOVERY = "stress_recovery"
+    CUSTOM = "custom"
+
+
+class MilestoneSeverity(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+
+class LightLevel(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    DIRECT = "direct"
+
+
+class HumidityLevel(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+
+# Species Schemas
 class SpeciesBase(BaseModel):
     common_name: str
     scientific_name: str
@@ -34,7 +74,10 @@ class SpeciesSearchResult(BaseModel):
     light_level: str
     water_frequency_days: int
 
+    model_config = {"from_attributes": True}
 
+
+# Plant Schemas
 class PlantBase(BaseModel):
     nickname: str
     species_id: str
@@ -46,12 +89,14 @@ class PlantBase(BaseModel):
 
 
 class PlantCreate(PlantBase):
-    id: str
+    id: Optional[str] = None
 
 
 class PlantUpdate(BaseModel):
     nickname: Optional[str] = None
+    species_id: Optional[str] = None
     location: Optional[str] = None
+    acquired_date: Optional[datetime] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     photo_url: Optional[str] = None
@@ -66,18 +111,16 @@ class PlantResponse(PlantBase):
     model_config = {"from_attributes": True}
 
 
+# Care Log Schemas
 class CareLogBase(BaseModel):
     type: str
     timestamp: datetime
     notes: Optional[str] = None
-    care_metadata: Optional[dict] = None
+    care_metadata: Optional[Dict[str, Any]] = None
 
 
-class CareLogCreate(BaseModel):
-    type: str
-    timestamp: datetime
-    notes: Optional[str] = None
-    care_metadata: Optional[dict] = None
+class CareLogCreate(CareLogBase):
+    pass
 
 
 class CareLogResponse(CareLogBase):
@@ -88,24 +131,33 @@ class CareLogResponse(CareLogBase):
     model_config = {"from_attributes": True}
 
 
-class CareLogPaginated(BaseModel):
-    items: list[CareLogResponse]
+class CareLogPage(BaseModel):
+    items: List[CareLogResponse]
     total: int
     page: int
     page_size: int
 
-
-class ChatMessageCreate(BaseModel):
-    plant_id: str
-    role: str = Field(default="user")
-    content: str
+    model_config = {"from_attributes": True}
 
 
-class ChatMessageResponse(BaseModel):
-    id: str
-    plant_id: str
+CareLogPaginated = CareLogPage
+
+
+# Chat Schemas
+class ChatMessageBase(BaseModel):
     role: str
     content: str
+
+
+class ChatMessageCreate(BaseModel):
+    plant_id: Optional[str] = None
+    role: str = "user"
+    content: str
+
+
+class ChatMessageResponse(ChatMessageBase):
+    id: str
+    plant_id: str
     timestamp: datetime
 
     model_config = {"from_attributes": True}
@@ -115,6 +167,7 @@ class ChatRequest(BaseModel):
     message: str
 
 
+# Milestone Schemas
 class MilestoneBase(BaseModel):
     plant_id: str
     type: str
@@ -125,7 +178,7 @@ class MilestoneBase(BaseModel):
 
 
 class MilestoneCreate(MilestoneBase):
-    id: str
+    id: Optional[str] = None
 
 
 class MilestoneResponse(MilestoneBase):
@@ -135,80 +188,110 @@ class MilestoneResponse(MilestoneBase):
     model_config = {"from_attributes": True}
 
 
-class KindwiseIdentifyRequest(BaseModel):
+# Vision / Identify Schemas
+class IdentifyRequest(BaseModel):
     image_base64: str
     latitude: Optional[float] = None
     longitude: Optional[float] = None
 
 
-class KindwiseUsageResponse(BaseModel):
-    month: str
-    count: int
+class IdentifySuggestion(BaseModel):
+    scientific_name: str
+    common_name: str
+    confidence: float
+    thumbnail_url: Optional[str] = None
+    description: Optional[str] = None
+    details: Optional[Dict[str, Any]] = None
 
-    model_config = {"from_attributes": True}
+
+class IdentifyResponse(BaseModel):
+    suggestions: List[IdentifySuggestion]
 
 
+# Weather Schemas
+class WeatherCurrent(BaseModel):
+    temp_c: float
+    humidity: int
+    condition_text: str
+    icon: Optional[str] = "sun"
+    wind_kph: float
+
+
+class WeatherForecastDay(BaseModel):
+    date: str
+    max_temp_c: float
+    min_temp_c: float
+    condition_text: str
+    daily_chance_of_rain: int
+
+
+class WeatherResponse(BaseModel):
+    current: WeatherCurrent
+    forecast: List[WeatherForecastDay]
+
+
+# AI Service Schemas
+class SurvivalScoreResponse(BaseModel):
+    score: float = Field(ge=0, le=100)
+    factors: List[str]
+    urgent: bool = False
+    analysis: Optional[str] = None
+    recommendations: Optional[List[str]] = None
+
+
+class StressRisk(BaseModel):
+    factor: str
+    severity: str  # low, medium, high
+    timeframe: str
+
+
+class StressPredictionResponse(BaseModel):
+    risks: List[StressRisk]
+    stress_level: Optional[str] = None
+    probability: Optional[float] = None
+    factors: Optional[List[str]] = None
+    remediation: Optional[List[str]] = None
+
+
+class RescueStep(BaseModel):
+    step: int
+    title: str
+    description: str
+
+
+class EmergencyRescueResponse(BaseModel):
+    steps: List[RescueStep]
+    diagnosis: Optional[str] = None
+    urgency: Optional[str] = None
+    recovery_time_days: Optional[int] = None
+
+
+class GrowthMilestone(BaseModel):
+    event: str
+    estimated_date: str
+    confidence: float
+
+
+class GrowthForecastResponse(BaseModel):
+    milestones: List[GrowthMilestone]
+    projected_height_cm: Optional[float] = None
+    projected_health: Optional[str] = None
+    milestones_expected: Optional[List[str]] = None
+    care_recommendations: Optional[List[str]] = None
+
+
+# Passport Schema
 class PlantPassportResponse(BaseModel):
     plant: PlantResponse
     species: SpeciesResponse
-    care_logs: list[CareLogResponse]
-    milestones: list[MilestoneResponse]
-    chat_messages: list[ChatMessageResponse]
+    care_logs: List[CareLogResponse]
+    milestones: List[MilestoneResponse]
+    chat_messages: List[ChatMessageResponse]
     total_care_logs: int
     total_chat_messages: int
     total_milestones: int
 
-
-class WeatherCurrentResponse(BaseModel):
-    temp_c: float
-    condition: str
-    humidity: int
-    wind_kph: float
-    feelslike_c: float
-    uv: float
-    location: str
+    model_config = {"from_attributes": True}
 
 
-class AISurvivalScoreRequest(BaseModel):
-    plant_id: str
-
-
-class AISurvivalScoreResponse(BaseModel):
-    score: float
-    analysis: str
-    recommendations: list[str]
-
-
-class AIStressPredictionRequest(BaseModel):
-    plant_id: str
-
-
-class AIStressPredictionResponse(BaseModel):
-    stress_level: str
-    probability: float
-    factors: list[str]
-    remediation: list[str]
-
-
-class AIEmergencyRescueRequest(BaseModel):
-    plant_id: str
-    symptoms: str
-
-
-class AIEmergencyRescueResponse(BaseModel):
-    diagnosis: str
-    urgency: str
-    steps: list[str]
-    recovery_time_days: int
-
-
-class AIGrowthForecastRequest(BaseModel):
-    plant_id: str
-    months: int = Field(default=3, ge=1, le=12)
-
-
-class AIGrowthForecastResponse(BaseModel):
-    projected_height_cm: float
-    projected_health: str
-    milestones_expected: list[str]
-    care_recommendations: list[str]
+PlantPassport = PlantPassportResponse

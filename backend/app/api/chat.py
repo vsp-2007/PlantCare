@@ -1,15 +1,17 @@
+import uuid
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from datetime import datetime
 
 from app.db.database import get_db
 from app.models import ChatMessage, Plant
-from app.schemas.schemas import ChatMessageCreate, ChatMessageResponse, ChatRequest
+from app.schemas import ChatMessageResponse, ChatRequest
+from app.services.llm import chat_response
 
 router = APIRouter(prefix="/plants", tags=["chat"])
 
 
-@router.get("/plants/{plant_id}/chat", response_model=list[ChatMessageResponse])
+@router.get("/{plant_id}/chat", response_model=list[ChatMessageResponse])
 def list_chat_messages(plant_id: str, db: Session = Depends(get_db)):
     plant = db.query(Plant).filter(Plant.id == plant_id).first()
     if not plant:
@@ -22,13 +24,12 @@ def list_chat_messages(plant_id: str, db: Session = Depends(get_db)):
     )
 
 
-@router.post("/plants/{plant_id}/chat", response_model=ChatMessageResponse, status_code=201)
-def create_chat_message(plant_id: str, body: ChatRequest, db: Session = Depends(get_db)):
+@router.post("/{plant_id}/chat", response_model=ChatMessageResponse, status_code=201)
+async def create_chat_message(plant_id: str, body: ChatRequest, db: Session = Depends(get_db)):
     plant = db.query(Plant).filter(Plant.id == plant_id).first()
     if not plant:
         raise HTTPException(404, "Plant not found")
 
-    import uuid
     user_msg = ChatMessage(
         id=str(uuid.uuid4()),
         plant_id=plant_id,
@@ -55,9 +56,7 @@ def create_chat_message(plant_id: str, body: ChatRequest, db: Session = Depends(
         .all()
     ]
 
-    from app.services.llm import chat_response
-    import asyncio
-    reply = asyncio.run(chat_response(plant_info, conversation, body.message))
+    reply = await chat_response(plant_info, conversation, body.message)
 
     ai_msg = ChatMessage(
         id=str(uuid.uuid4()),
@@ -72,10 +71,11 @@ def create_chat_message(plant_id: str, body: ChatRequest, db: Session = Depends(
     return ai_msg
 
 
-@router.post("/plants/{plant_id}/chat/stream")
-async def chat_stream(plant_id: str, body: ChatRequest, db: Session = Depends(get_db)):
+@router.post("/{plant_id}/chat/stream")
+async def chat_stream_endpoint(plant_id: str, body: ChatRequest, db: Session = Depends(get_db)):
     from fastapi.responses import StreamingResponse
     import asyncio
+    import json
 
     plant = db.query(Plant).filter(Plant.id == plant_id).first()
     if not plant:
@@ -98,11 +98,8 @@ async def chat_stream(plant_id: str, body: ChatRequest, db: Session = Depends(ge
         .all()
     ]
 
-    from app.services.llm import chat_response
-
     async def event_stream():
         reply = await chat_response(plant_info, conversation, body.message)
-        import uuid
         user_id = str(uuid.uuid4())
         ai_id = str(uuid.uuid4())
         now = datetime.utcnow()
@@ -113,7 +110,6 @@ async def chat_stream(plant_id: str, body: ChatRequest, db: Session = Depends(ge
         db.add(ai_msg)
         db.commit()
 
-        import json
         yield f"data: {json.dumps({'id': user_id, 'role': 'user', 'content': body.message})}\n\n"
         for word in reply.split():
             yield f"data: {json.dumps({'content': word + ' '})}\n\n"
